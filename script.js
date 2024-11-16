@@ -6,40 +6,55 @@ window.onload = function() {
     toggleInvoiceType(); // Set up initial invoice type
 }
 
-function generateInvoiceId() {
-    const prefix = 'INV';
-    const timestamp = new Date().getTime().toString().slice(-6);
-    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-    const invoiceId = `${prefix}-${timestamp}-${random}`;
-    document.getElementById('invoiceNumber').value = invoiceId;
+function generateInvoice() {
+    // Assign form fields to variables
+    const companyNameInput = document.getElementById('companyName');
+    const companyAddressInput = document.getElementById('companyAddress');
+    const clientNameInput = document.getElementById('clientName');
+    const clientAddressInput = document.getElementById('clientAddress');
+    const invoiceNumberInput = document.getElementById('invoiceNumber');
+    const invoiceDateInput = document.getElementById('invoiceDate');
+    const itemsList = document.getElementById('itemsList');
+
+    // Assign preview elements to variables
+    const previewCompanyName = document.getElementById('previewCompanyName');
+    const previewCompanyAddress = document.getElementById('previewCompanyAddress');
+    const previewClientName = document.getElementById('previewClientName');
+    const previewClientAddress = document.getElementById('previewClientAddress');
+    const previewInvoiceNumber = document.getElementById('previewInvoiceNumber');
+    const previewInvoiceDate = document.getElementById('previewInvoiceDate');
+    const previewItems = document.getElementById('previewItems');
+    const previewTotal = document.getElementById('previewTotal');
+
+    // Populate preview elements with input values
+    previewCompanyName.innerText = companyNameInput.value.trim() || "Your Company Name";
+    previewCompanyAddress.innerText = companyAddressInput.value.trim() || "Your Address";
+    previewClientName.innerText = clientNameInput.value.trim() || "Client Name";
+    previewClientAddress.innerText = clientAddressInput.value.trim() || "Client Address";
+    previewInvoiceNumber.innerText = invoiceNumberInput.value.trim() || "00001";
+    previewInvoiceDate.innerText = invoiceDateInput.value || new Date().toLocaleDateString();
+
+    // Populate items list (example assumes items are manually added to #itemsList)
+    if (itemsList.children.length > 0) {
+        previewItems.innerHTML = ''; // Clear previous items
+        Array.from(itemsList.children).forEach((itemRow) => {
+            const clonedRow = itemRow.cloneNode(true); // Clone each item row
+            previewItems.appendChild(clonedRow); // Add it to the preview
+        });
+    } else {
+        previewItems.innerHTML = "<tr><td>No items added.</td></tr>";
+    }
+
+    // Calculate total (this assumes rows have a data-price attribute or similar)
+    let total = 0;
+    Array.from(itemsList.children).forEach((itemRow) => {
+        const priceCell = itemRow.querySelector('.price'); // Adjust based on your structure
+        const price = parseFloat(priceCell?.innerText || 0);
+        total += price;
+    });
+    previewTotal.innerText = total.toFixed(2);
 }
 
-function toggleInvoiceType() {
-    const type = document.querySelector('input[name="invoiceType"]:checked').value;
-    const itemsList = document.getElementById('itemsList');
-    itemsList.innerHTML = ''; // Clear existing items
-    addItemRow(); // Add new item row with correct format
-    
-    // Update preview header
-    const headerRow = document.getElementById('previewItemsHeader');
-    if (type === 'services') {
-        headerRow.innerHTML = `
-            <tr>
-                <th style="width: 40%">Description</th>
-                <th class="quantity-column" style="width: 20%">Hours</th>
-                <th class="price-column" style="width: 20%">Rate</th>
-                <th class="price-column" style="width: 20%">Total</th>
-            </tr>`;
-    } else {
-        headerRow.innerHTML = `
-            <tr>
-                <th style="width: 40%">Description</th>
-                <th class="quantity-column" style="width: 20%">Quantity</th>
-                <th class="price-column" style="width: 20%">Price</th>
-                <th class="price-column" style="width: 20%">Total</th>
-            </tr>`;
-    }
-}
 
 function addItemRow() {
     const type = document.querySelector('input[name="invoiceType"]:checked').value;
