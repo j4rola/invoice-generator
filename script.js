@@ -92,14 +92,74 @@ function updateRunningTotal() {
     document.getElementById('runningTotal').textContent = `Total: $${total.toFixed(2)}`;
 }
 
+async function downloadPDF() {
+    // Force a preview update before generating PDF
+    generateInvoice();
+    
+    // Wait for DOM to update
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    const element = document.getElementById('invoice');
+    console.log('Element content before PDF generation:', element.innerHTML);
+
+    // Make sure preview section is visible
+    document.getElementById('previewSection').style.display = 'block';
+    
+    const opt = {
+        margin: [0.5, 0.5],
+        filename: `invoice-${document.getElementById('invoiceNumber').value}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+            scale: 2,
+            useCORS: true,
+            logging: true,
+            backgroundColor: '#ffffff'
+        },
+        jsPDF: { 
+            unit: 'in', 
+            format: 'letter', 
+            orientation: 'portrait'
+        }
+    };
+
+    try {
+        // Check if preview content is populated
+        if (!element.querySelector('#previewCompanyName').textContent) {
+            console.warn('Preview content is empty, regenerating...');
+            generateInvoice();
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+
+        const content = element.innerHTML;
+        console.log('Final content being sent to PDF:', content);
+
+        await html2pdf().set(opt).from(element).save();
+    } catch (error) {
+        console.error('Error generating PDF:', error);
+        alert('There was an error generating the PDF. Please try again.');
+    }
+}
+
+// Also modify generateInvoice to ensure content is updated
 function generateInvoice() {
+    console.log('Generating invoice preview...');
+    
     // Update preview with form data
-    document.getElementById('previewCompanyName').textContent = document.getElementById('companyName').value;
-    document.getElementById('previewCompanyAddress').innerHTML = document.getElementById('companyAddress').value.replace(/\n/g, '<br>');
-    document.getElementById('previewClientName').textContent = document.getElementById('clientName').value;
-    document.getElementById('previewClientAddress').innerHTML = document.getElementById('clientAddress').value.replace(/\n/g, '<br>');
-    document.getElementById('previewInvoiceNumber').textContent = document.getElementById('invoiceNumber').value;
-    document.getElementById('previewInvoiceDate').textContent = document.getElementById('invoiceDate').value;
+    const companyName = document.getElementById('companyName').value;
+    const companyAddress = document.getElementById('companyAddress').value;
+    const clientName = document.getElementById('clientName').value;
+    const clientAddress = document.getElementById('clientAddress').value;
+    const invoiceNumber = document.getElementById('invoiceNumber').value;
+    const invoiceDate = document.getElementById('invoiceDate').value;
+
+    console.log('Form values:', { companyName, companyAddress, clientName, clientAddress, invoiceNumber, invoiceDate });
+
+    document.getElementById('previewCompanyName').textContent = companyName;
+    document.getElementById('previewCompanyAddress').innerHTML = companyAddress.replace(/\n/g, '<br>');
+    document.getElementById('previewClientName').textContent = clientName;
+    document.getElementById('previewClientAddress').innerHTML = clientAddress.replace(/\n/g, '<br>');
+    document.getElementById('previewInvoiceNumber').textContent = invoiceNumber;
+    document.getElementById('previewInvoiceDate').textContent = invoiceDate;
 
     // Generate items table
     const itemsTable = document.getElementById('previewItems');
@@ -135,32 +195,6 @@ function generateInvoice() {
 
     document.getElementById('previewTotal').textContent = total.toFixed(2);
     document.getElementById('previewSection').style.display = 'block';
-}
 
-async function downloadPDF() {
-    const element = document.getElementById('invoice');
-    console.log(element)
-    const opt = {
-        margin: [0.5, 0.5],
-        filename: `invoice-${document.getElementById('invoiceNumber').value}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-            scale: 2,
-            useCORS: true,
-            logging: true
-        },
-        jsPDF: { 
-            unit: 'in', 
-            format: 'letter', 
-            orientation: 'portrait'
-        }
-    };
-
-    try {
-        const pdf = await html2pdf().set(opt).from(element).save();
-        return pdf;
-    } catch (error) {
-        console.error('Error generating PDF:', error);
-        alert('There was an error generating the PDF. Please try again.');
-    }
+    console.log('Preview generated. Content:', document.getElementById('invoice').innerHTML);
 }
