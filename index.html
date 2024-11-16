@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice Generator</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Invoice Generator</h1>
+        
+        <!-- Input Form -->
+        <div class="form-section">
+            <div class="form-group">
+                <label>Your Company Name:</label>
+                <input type="text" id="companyName">
+                
+                <label>Your Address:</label>
+                <textarea id="companyAddress"></textarea>
+                
+                <label>Client Name:</label>
+                <input type="text" id="clientName">
+                
+                <label>Client Address:</label>
+                <textarea id="clientAddress"></textarea>
+                
+                <label>Invoice Number:</label>
+                <div class="invoice-number-container">
+                    <input type="text" id="invoiceNumber">
+                    <button onclick="generateInvoiceId()" class="small-button">Generate New ID</button>
+                </div>
+                
+                <label>Invoice Date:</label>
+                <input type="date" id="invoiceDate">
+
+                <div class="radio-group">
+                    <label>
+                        <input type="radio" name="invoiceType" value="services" checked onchange="toggleInvoiceType()">
+                        Services
+                    </label>
+                    <label>
+                        <input type="radio" name="invoiceType" value="goods" onchange="toggleInvoiceType()">
+                        Goods
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="items-header">
+                    <h3>Items</h3>
+                    <button onclick="addItemRow()" class="small-button">Add Item</button>
+                </div>
+                <div id="itemsList"></div>
+            </div>
+
+            <div id="runningTotal" class="running-total">Total: $0.00</div>
+
+            <button onclick="generateInvoice()">Generate Invoice</button>
+        </div>
+
+        <!-- Preview Section -->
+        <div id="previewSection" class="preview-section">
+            <div class="invoice" id="invoice">
+                <div class="invoice-header">
+                    <div class="company-details">
+                        <h2 id="previewCompanyName"></h2>
+                        <div id="previewCompanyAddress"></div>
+                    </div>
+                    <div class="invoice-title">
+                        <h1>INVOICE</h1>
+                        <p>Invoice #: <span id="previewInvoiceNumber"></span></p>
+                        <p>Date: <span id="previewInvoiceDate"></span></p>
+                    </div>
+                </div>
+
+                <div class="client-info">
+                    <h3>Bill To:</h3>
+                    <p id="previewClientName"></p>
+                    <div id="previewClientAddress"></div>
+                </div>
+
+                <table class="invoice-items">
+                    <thead id="previewItemsHeader">
+                    </thead>
+                    <tbody id="previewItems"></tbody>
+                </table>
+
+                <div class="invoice-total">
+                    <h3>Total: $<span id="previewTotal">0.00</span></h3>
+                </div>
+            </div>
+            <button onclick="downloadPDF()">Download PDF</button>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
