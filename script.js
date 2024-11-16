@@ -139,6 +139,7 @@ function generateInvoice() {
 
 async function downloadPDF() {
     const element = document.getElementById('invoice');
+    console.log(element)
     const opt = {
         margin: [0.5, 0.5],
         filename: `invoice-${document.getElementById('invoiceNumber').value}.pdf`,
