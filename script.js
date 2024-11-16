@@ -202,6 +202,8 @@ function generateInvoice() {
     document.getElementById('previewInvoiceNumber').textContent = invoiceNumber;
     document.getElementById('previewInvoiceDate').textContent = invoiceDate;
 
+    console.log(`TESTING ${invoiceDate}`
+
     // Generate items table
     const itemsTable = document.getElementById('previewItems');
     itemsTable.innerHTML = '';
