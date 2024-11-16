@@ -250,3 +250,35 @@ button:hover {
 .quantity-column {
     text-align: center;
 }
+
+/* PDF styling */
+
+@media print {
+    .invoice {
+        background-color: white !important;
+        padding: 20px !important;
+        min-height: 100vh !important;
+        page-break-after: always !important;
+    }
+    
+    .invoice * {
+        visibility: visible !important;
+    }
+}
+
+/* Update the preview-section class */
+.preview-section {
+    display: none;
+    margin-top: 3rem;
+    padding-top: 3rem;
+    border-top: 2px solid var(--border-color);
+    background-color: white;
+}
+
+/* Ensure the invoice itself has a white background */
+.invoice {
+    background-color: white;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    min-height: 29.7cm; /* Approximate A4 height */
+}
