@@ -183,6 +183,7 @@ function generateInvoice() {
 
     document.getElementById('previewTotal').textContent = total.toFixed(2);
     document.getElementById('previewSection').style.display = 'block';
+    document.getElementById('downloadButton').style.display = 'block';
 
     console.log('Preview generated. Content:', document.getElementById('invoice').innerHTML);
 }
