@@ -93,21 +93,66 @@ function updateRunningTotal() {
 }
 
 async function downloadPDF() {
-    // Force a preview update before generating PDF
-    generateInvoice();
+    // Create a clean version for PDF
+    const pdfContent = document.createElement('div');
+    pdfContent.style.padding = '20px';
+    pdfContent.style.backgroundColor = 'white';
     
-    // Wait for DOM to update
-    await new Promise(resolve => setTimeout(resolve, 100));
+    // Get all the values
+    const companyName = document.getElementById('previewCompanyName').textContent;
+    const companyAddress = document.getElementById('previewCompanyAddress').innerHTML;
+    const clientName = document.getElementById('previewClientName').textContent;
+    const clientAddress = document.getElementById('previewClientAddress').innerHTML;
+    const invoiceNumber = document.getElementById('previewInvoiceNumber').textContent;
+    const invoiceDate = document.getElementById('previewInvoiceDate').textContent;
+    const itemsTable = document.getElementById('previewItems').innerHTML;
+    const total = document.getElementById('previewTotal').textContent;
 
-    const element = document.getElementById('invoice');
-    console.log('Element content before PDF generation:', element.innerHTML);
+    // Create clean HTML structure
+    pdfContent.innerHTML = `
+        <div style="font-family: Arial, sans-serif; color: black;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 30px;">
+                <div>
+                    <h2 style="color: #4f46e5; font-size: 24px; margin-bottom: 10px;">${companyName}</h2>
+                    <div style="font-size: 14px;">${companyAddress}</div>
+                </div>
+                <div style="text-align: right;">
+                    <h1 style="font-size: 28px; color: #4f46e5; margin-bottom: 10px;">INVOICE</h1>
+                    <p style="font-size: 14px;">Invoice #: ${invoiceNumber}</p>
+                    <p style="font-size: 14px;">Date: ${invoiceDate}</p>
+                </div>
+            </div>
 
-    // Make sure preview section is visible
-    document.getElementById('previewSection').style.display = 'block';
-    
+            <div style="margin-bottom: 30px;">
+                <h3 style="font-size: 16px; margin-bottom: 10px;">Bill To:</h3>
+                <p style="font-size: 14px;">${clientName}</p>
+                <div style="font-size: 14px;">${clientAddress}</div>
+            </div>
+
+            <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                <thead>
+                    <tr>
+                        <th style="text-align: left; padding: 10px; background-color: #f9fafb; border-bottom: 2px solid #e5e7eb; width: 40%;">Description</th>
+                        <th style="text-align: center; padding: 10px; background-color: #f9fafb; border-bottom: 2px solid #e5e7eb; width: 20%;">Hours</th>
+                        <th style="text-align: right; padding: 10px; background-color: #f9fafb; border-bottom: 2px solid #e5e7eb; width: 20%;">Rate</th>
+                        <th style="text-align: right; padding: 10px; background-color: #f9fafb; border-bottom: 2px solid #e5e7eb; width: 20%;">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${itemsTable}
+                </tbody>
+            </table>
+
+            <div style="text-align: right; margin-top: 20px; padding-top: 20px; border-top: 2px solid #e5e7eb;">
+                <h3 style="font-size: 20px; color: #4f46e5;">Total: $${total}</h3>
+            </div>
+        </div>
+    `;
+
+    // Generate PDF with inline styles
     const opt = {
         margin: [0.5, 0.5],
-        filename: `invoice-${document.getElementById('invoiceNumber').value}.pdf`,
+        filename: `invoice-${invoiceNumber}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { 
             scale: 2,
@@ -123,19 +168,15 @@ async function downloadPDF() {
     };
 
     try {
-        // Check if preview content is populated
-        if (!element.querySelector('#previewCompanyName').textContent) {
-            console.warn('Preview content is empty, regenerating...');
-            generateInvoice();
-            await new Promise(resolve => setTimeout(resolve, 100));
-        }
-
-        const content = element.innerHTML;
-        console.log('Final content being sent to PDF:', content);
-
-        await html2pdf().set(opt).from(element).save();
+        // Append temporarily to document
+        document.body.appendChild(pdfContent);
+        await html2pdf().set(opt).from(pdfContent).save();
+        document.body.removeChild(pdfContent);
     } catch (error) {
         console.error('Error generating PDF:', error);
+        if (document.body.contains(pdfContent)) {
+            document.body.removeChild(pdfContent);
+        }
         alert('There was an error generating the PDF. Please try again.');
     }
 }
