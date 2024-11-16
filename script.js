@@ -93,93 +93,38 @@ function updateRunningTotal() {
 }
 
 async function downloadPDF() {
-    // Create a clean version for PDF
-    const pdfContent = document.createElement('div');
-    pdfContent.style.padding = '20px';
-    pdfContent.style.backgroundColor = 'white';
+    // First ensure the preview is generated
+    generateInvoice();
     
-    // Get all the values
-    const companyName = document.getElementById('previewCompanyName').textContent;
-    const companyAddress = document.getElementById('previewCompanyAddress').innerHTML;
-    const clientName = document.getElementById('previewClientName').textContent;
-    const clientAddress = document.getElementById('previewClientAddress').innerHTML;
-    const invoiceNumber = document.getElementById('previewInvoiceNumber').textContent;
-    const invoiceDate = document.getElementById('previewInvoiceDate').textContent;
-    const itemsTable = document.getElementById('previewItems').innerHTML;
-    const total = document.getElementById('previewTotal').textContent;
-
-    console.log(` TEST ${total}`)
-
-    // Create clean HTML structure
-    pdfContent.innerHTML = `
-        <div style="font-family: Arial, sans-serif; color: black;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 30px;">
-                <div>
-                    <h2 style="color: #4f46e5; font-size: 24px; margin-bottom: 10px;">${companyName}</h2>
-                    <div style="font-size: 14px;">${companyAddress}</div>
-                </div>
-                <div style="text-align: right;">
-                    <h1 style="font-size: 28px; color: #4f46e5; margin-bottom: 10px;">INVOICE</h1>
-                    <p style="font-size: 14px;">Invoice #: ${invoiceNumber}</p>
-                    <p style="font-size: 14px;">Date: ${invoiceDate}</p>
-                </div>
-            </div>
-
-            <div style="margin-bottom: 30px;">
-                <h3 style="font-size: 16px; margin-bottom: 10px;">Bill To:</h3>
-                <p style="font-size: 14px;">${clientName}</p>
-                <div style="font-size: 14px;">${clientAddress}</div>
-            </div>
-
-            <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
-                <thead>
-                    <tr>
-                        <th style="text-align: left; padding: 10px; background-color: #f9fafb; border-bottom: 2px solid #e5e7eb; width: 40%;">Description</th>
-                        <th style="text-align: center; padding: 10px; background-color: #f9fafb; border-bottom: 2px solid #e5e7eb; width: 20%;">Hours</th>
-                        <th style="text-align: right; padding: 10px; background-color: #f9fafb; border-bottom: 2px solid #e5e7eb; width: 20%;">Rate</th>
-                        <th style="text-align: right; padding: 10px; background-color: #f9fafb; border-bottom: 2px solid #e5e7eb; width: 20%;">Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${itemsTable}
-                </tbody>
-            </table>
-
-            <div style="text-align: right; margin-top: 20px; padding-top: 20px; border-top: 2px solid #e5e7eb;">
-                <h3 style="font-size: 20px; color: #4f46e5;">Total: $${total}</h3>
-            </div>
-        </div>
-    `;
-
-    // Generate PDF with inline styles
-    const opt = {
-        margin: [0.5, 0.5],
-        filename: `invoice-${invoiceNumber}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-            scale: 2,
-            useCORS: true,
-            logging: true,
-            backgroundColor: '#ffffff'
-        },
-        jsPDF: { 
-            unit: 'in', 
-            format: 'letter', 
-            orientation: 'portrait'
-        }
-    };
-
+    const element = document.getElementById('invoice');
+    
     try {
-        // Append temporarily to document
-        document.body.appendChild(pdfContent);
-        await html2pdf().set(opt).from(pdfContent).save();
-        document.body.removeChild(pdfContent);
+        // Create the PDF
+        const doc = new jspdf.jsPDF('p', 'pt', 'letter');
+        
+        // Get canvas from HTML content
+        const canvas = await html2canvas(element, {
+            scale: 2,
+            backgroundColor: '#ffffff',
+            useCORS: true,
+            logging: true
+        });
+        
+        // Canvas dimensions
+        const imgData = canvas.toDataURL('image/png');
+        const imgProps = doc.getImageProperties(imgData);
+        const pdfWidth = doc.internal.pageSize.getWidth();
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        
+        // Add image to PDF
+        doc.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        
+        // Save the PDF
+        doc.save(`invoice-${document.getElementById('invoiceNumber').value}.pdf`);
+        
     } catch (error) {
-        console.error('Error generating PDF:', error);
-        if (document.body.contains(pdfContent)) {
-            document.body.removeChild(pdfContent);
-        }
-        alert('There was an error generating the PDF. Please try again.');
+        console.error('PDF Generation Error:', error);
+        alert('Error generating PDF. Please try again.');
     }
 }
 
