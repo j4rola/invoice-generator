@@ -49,15 +49,15 @@ function addItemRow() {
     if (type === 'services') {
         itemRow.innerHTML = `
             <input type="text" placeholder="Description" class="item-description">
-            <input type="number" placeholder="Hours" class="item-hours" onchange="calculateRowTotal(this.parentElement)">
-            <input type="number" placeholder="Rate" class="item-rate" onchange="calculateRowTotal(this.parentElement)">
+            <input type="number" placeholder="Hours" class="item-hours" oninput="calculateRowTotal(this.parentElement)">
+            <input type="number" placeholder="Rate" class="item-rate" oninput="calculateRowTotal(this.parentElement)">
             <input type="text" placeholder="Total" class="item-total" readonly>
         `;
     } else {
         itemRow.innerHTML = `
             <input type="text" placeholder="Description" class="item-description">
-            <input type="number" placeholder="Quantity" class="item-quantity" onchange="calculateRowTotal(this.parentElement)">
-            <input type="number" placeholder="Price" class="item-price" onchange="calculateRowTotal(this.parentElement)">
+            <input type="number" placeholder="Quantity" class="item-quantity" oninput="calculateRowTotal(this.parentElement)">
+            <input type="number" placeholder="Price" class="item-price" oninput="calculateRowTotal(this.parentElement)">
             <input type="text" placeholder="Total" class="item-total" readonly>
         `;
     }
@@ -137,15 +137,29 @@ function generateInvoice() {
     document.getElementById('previewSection').style.display = 'block';
 }
 
-function downloadPDF() {
+async function downloadPDF() {
     const element = document.getElementById('invoice');
     const opt = {
-        margin: 1,
+        margin: [0.5, 0.5],
         filename: `invoice-${document.getElementById('invoiceNumber').value}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+        html2canvas: { 
+            scale: 2,
+            useCORS: true,
+            logging: true
+        },
+        jsPDF: { 
+            unit: 'in', 
+            format: 'letter', 
+            orientation: 'portrait'
+        }
     };
 
-    html2pdf().from(element).set(opt).save();
+    try {
+        const pdf = await html2pdf().set(opt).from(element).save();
+        return pdf;
+    } catch (error) {
+        console.error('Error generating PDF:', error);
+        alert('There was an error generating the PDF. Please try again.');
+    }
 }
