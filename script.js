@@ -108,6 +108,8 @@ async function downloadPDF() {
     const itemsTable = document.getElementById('previewItems').innerHTML;
     const total = document.getElementById('previewTotal').textContent;
 
+    console.log(` TEST ${total}`)
+
     // Create clean HTML structure
     pdfContent.innerHTML = `
         <div style="font-family: Arial, sans-serif; color: black;">
