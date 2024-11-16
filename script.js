@@ -96,4 +96,56 @@ function generateInvoice() {
     // Update preview with form data
     document.getElementById('previewCompanyName').textContent = document.getElementById('companyName').value;
     document.getElementById('previewCompanyAddress').innerHTML = document.getElementById('companyAddress').value.replace(/\n/g, '<br>');
-    document.getElementById('previewClient
+    document.getElementById('previewClientName').textContent = document.getElementById('clientName').value;
+    document.getElementById('previewClientAddress').innerHTML = document.getElementById('clientAddress').value.replace(/\n/g, '<br>');
+    document.getElementById('previewInvoiceNumber').textContent = document.getElementById('invoiceNumber').value;
+    document.getElementById('previewInvoiceDate').textContent = document.getElementById('invoiceDate').value;
+
+    // Generate items table
+    const itemsTable = document.getElementById('previewItems');
+    itemsTable.innerHTML = '';
+    let total = 0;
+    const type = document.querySelector('input[name="invoiceType"]:checked').value;
+
+    const itemRows = document.querySelectorAll('.item-row');
+    itemRows.forEach(row => {
+        const description = row.querySelector('.item-description').value;
+        let quantity, rate, itemTotal;
+        
+        if (type === 'services') {
+            quantity = parseFloat(row.querySelector('.item-hours').value) || 0;
+            rate = parseFloat(row.querySelector('.item-rate').value) || 0;
+        } else {
+            quantity = parseFloat(row.querySelector('.item-quantity').value) || 0;
+            rate = parseFloat(row.querySelector('.item-price').value) || 0;
+        }
+        
+        itemTotal = quantity * rate;
+        total += itemTotal;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${description}</td>
+            <td class="quantity-column">${quantity}</td>
+            <td class="price-column">$${rate.toFixed(2)}</td>
+            <td class="price-column">$${itemTotal.toFixed(2)}</td>
+        `;
+        itemsTable.appendChild(tr);
+    });
+
+    document.getElementById('previewTotal').textContent = total.toFixed(2);
+    document.getElementById('previewSection').style.display = 'block';
+}
+
+function downloadPDF() {
+    const element = document.getElementById('invoice');
+    const opt = {
+        margin: 1,
+        filename: `invoice-${document.getElementById('invoiceNumber').value}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+
+    html2pdf().from(element).set(opt).save();
+}
