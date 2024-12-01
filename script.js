@@ -2,8 +2,7 @@
 window.onload = function() {
     generateInvoiceId();
     document.getElementById('invoiceDate').valueAsDate = new Date();
-    addItemRow(); // Add first item row
-    toggleInvoiceType(); // Set up initial invoice type
+    addItemRow(); // Add only one initial row
 }
 
 function generateInvoiceId() {
@@ -36,9 +35,6 @@ function toggleInvoiceType() {
                 <th class="price-column" style="width: 20%">Total</th>
             </tr>`;
     }
-    
-    // Instead of clearing existing items, just add a new row of the current type
-    addItemRow();
 }
 
 function addItemRow() {
