@@ -37,6 +37,12 @@ function toggleInvoiceType() {
     }
 }
 
+function deleteRow(button) {
+    const row = button.parentElement;
+    row.remove();
+    updateRunningTotal();
+}
+
 function addItemRow() {
     const type = document.querySelector('input[name="invoiceType"]:checked').value;
     const itemRow = document.createElement('div');
@@ -49,6 +55,7 @@ function addItemRow() {
             <input type="number" placeholder="Hours" class="item-hours" oninput="calculateRowTotal(this.parentElement)">
             <input type="number" placeholder="Rate" class="item-rate" oninput="calculateRowTotal(this.parentElement)">
             <input type="text" placeholder="Total" class="item-total" readonly>
+            <button onclick="deleteRow(this)" class="delete-row">&times;</button>
         `;
     } else {
         itemRow.innerHTML = `
@@ -56,6 +63,7 @@ function addItemRow() {
             <input type="number" placeholder="Quantity" class="item-quantity" oninput="calculateRowTotal(this.parentElement)">
             <input type="number" placeholder="Price" class="item-price" oninput="calculateRowTotal(this.parentElement)">
             <input type="text" placeholder="Total" class="item-total" readonly>
+            <button onclick="deleteRow(this)" class="delete-row">&times;</button>
         `;
     }
     
