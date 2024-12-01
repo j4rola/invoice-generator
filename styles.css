@@ -296,3 +296,33 @@ button:hover {
     margin-bottom: 2rem;
     min-height: 29.7cm; /* Approximate A4 height */
 }
+
+/* Add these to your existing CSS */
+.item-row {
+    position: relative; /* Added for delete button positioning */
+}
+
+.delete-row {
+    position: absolute;
+    right: -40px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border-radius: 50%;
+    background-color: #ef4444;
+    color: white;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.15s ease;
+}
+
+.delete-row:hover {
+    background-color: #dc2626;
+}
