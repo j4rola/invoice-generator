@@ -16,11 +16,8 @@ function generateInvoiceId() {
 
 function toggleInvoiceType() {
     const type = document.querySelector('input[name="invoiceType"]:checked').value;
-    const itemsList = document.getElementById('itemsList');
-    itemsList.innerHTML = ''; // Clear existing items
-    addItemRow(); // Add new item row with correct format
     
-    // Update preview header
+    // Update preview header without clearing items
     const headerRow = document.getElementById('previewItemsHeader');
     if (type === 'services') {
         headerRow.innerHTML = `
@@ -39,12 +36,16 @@ function toggleInvoiceType() {
                 <th class="price-column" style="width: 20%">Total</th>
             </tr>`;
     }
+    
+    // Instead of clearing existing items, just add a new row of the current type
+    addItemRow();
 }
 
 function addItemRow() {
     const type = document.querySelector('input[name="invoiceType"]:checked').value;
     const itemRow = document.createElement('div');
     itemRow.className = 'item-row';
+    itemRow.dataset.type = type; // Add data attribute to track item type
     
     if (type === 'services') {
         itemRow.innerHTML = `
@@ -66,7 +67,7 @@ function addItemRow() {
 }
 
 function calculateRowTotal(row) {
-    const type = document.querySelector('input[name="invoiceType"]:checked').value;
+    const type = row.dataset.type; // Use the stored type instead of radio button
     let total = 0;
     
     if (type === 'services') {
@@ -90,6 +91,52 @@ function updateRunningTotal() {
         total += parseFloat(totalText.replace('$', '')) || 0;
     });
     document.getElementById('runningTotal').textContent = `Total: $${total.toFixed(2)}`;
+}
+
+function generateInvoice() {
+    // Update preview with form data
+    document.getElementById('previewCompanyName').textContent = document.getElementById('companyName').value;
+    document.getElementById('previewCompanyAddress').innerHTML = document.getElementById('companyAddress').value.replace(/\n/g, '<br>');
+    document.getElementById('previewClientName').textContent = document.getElementById('clientName').value;
+    document.getElementById('previewClientAddress').innerHTML = document.getElementById('clientAddress').value.replace(/\n/g, '<br>');
+    document.getElementById('previewInvoiceNumber').textContent = document.getElementById('invoiceNumber').value;
+    document.getElementById('previewInvoiceDate').textContent = document.getElementById('invoiceDate').value;
+
+    // Generate items table
+    const itemsTable = document.getElementById('previewItems');
+    itemsTable.innerHTML = '';
+    let total = 0;
+
+    const itemRows = document.querySelectorAll('.item-row');
+    itemRows.forEach(row => {
+        const type = row.dataset.type;
+        const description = row.querySelector('.item-description').value;
+        let quantity, rate, itemTotal;
+        
+        if (type === 'services') {
+            quantity = parseFloat(row.querySelector('.item-hours').value) || 0;
+            rate = parseFloat(row.querySelector('.item-rate').value) || 0;
+        } else {
+            quantity = parseFloat(row.querySelector('.item-quantity').value) || 0;
+            rate = parseFloat(row.querySelector('.item-price').value) || 0;
+        }
+        
+        itemTotal = quantity * rate;
+        total += itemTotal;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${description}</td>
+            <td class="quantity-column">${quantity}</td>
+            <td class="price-column">$${rate.toFixed(2)}</td>
+            <td class="price-column">$${itemTotal.toFixed(2)}</td>
+        `;
+        itemsTable.appendChild(tr);
+    });
+
+    document.getElementById('previewTotal').textContent = total.toFixed(2);
+    document.getElementById('previewSection').style.display = 'block';
+    document.getElementById('downloadButton').style.display = 'block';
 }
 
 async function downloadPDF() {
@@ -126,64 +173,4 @@ async function downloadPDF() {
         console.error('PDF Generation Error:', error);
         alert('Error generating PDF. Please try again.');
     }
-}
-
-// Also modify generateInvoice to ensure content is updated
-function generateInvoice() {
-    console.log('Generating invoice preview...');
-    
-    // Update preview with form data
-    const companyName = document.getElementById('companyName').value;
-    const companyAddress = document.getElementById('companyAddress').value;
-    const clientName = document.getElementById('clientName').value;
-    const clientAddress = document.getElementById('clientAddress').value;
-    const invoiceNumber = document.getElementById('invoiceNumber').value;
-    const invoiceDate = document.getElementById('invoiceDate').value;
-
-    console.log('Form values:', { companyName, companyAddress, clientName, clientAddress, invoiceNumber, invoiceDate });
-
-    document.getElementById('previewCompanyName').textContent = companyName;
-    document.getElementById('previewCompanyAddress').innerHTML = companyAddress.replace(/\n/g, '<br>');
-    document.getElementById('previewClientName').textContent = clientName;
-    document.getElementById('previewClientAddress').innerHTML = clientAddress.replace(/\n/g, '<br>');
-    document.getElementById('previewInvoiceNumber').textContent = invoiceNumber;
-    document.getElementById('previewInvoiceDate').textContent = invoiceDate;
-
-    // Generate items table
-    const itemsTable = document.getElementById('previewItems');
-    itemsTable.innerHTML = '';
-    let total = 0;
-    const type = document.querySelector('input[name="invoiceType"]:checked').value;
-
-    const itemRows = document.querySelectorAll('.item-row');
-    itemRows.forEach(row => {
-        const description = row.querySelector('.item-description').value;
-        let quantity, rate, itemTotal;
-        
-        if (type === 'services') {
-            quantity = parseFloat(row.querySelector('.item-hours').value) || 0;
-            rate = parseFloat(row.querySelector('.item-rate').value) || 0;
-        } else {
-            quantity = parseFloat(row.querySelector('.item-quantity').value) || 0;
-            rate = parseFloat(row.querySelector('.item-price').value) || 0;
-        }
-        
-        itemTotal = quantity * rate;
-        total += itemTotal;
-
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>${description}</td>
-            <td class="quantity-column">${quantity}</td>
-            <td class="price-column">$${rate.toFixed(2)}</td>
-            <td class="price-column">$${itemTotal.toFixed(2)}</td>
-        `;
-        itemsTable.appendChild(tr);
-    });
-
-    document.getElementById('previewTotal').textContent = total.toFixed(2);
-    document.getElementById('previewSection').style.display = 'block';
-    document.getElementById('downloadButton').style.display = 'block';
-
-    console.log('Preview generated. Content:', document.getElementById('invoice').innerHTML);
 }
